@@ -1,3 +1,5 @@
+"use strict";
+
 const WIDTH = 505;
 const HEIGHT = 606;
 
@@ -8,18 +10,28 @@ const magicalPositions = [1, 2.4, 3.8];
 const modal = document.querySelector(".modal");
 
 // variables
-let spawner, lost = false,allEnemies = [];
+let spawner, lost = false, allEnemies = [];
 
+
+class Entity {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    // drawing it onto the canvas
+    render() {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    };
+}
 
 // Enemy class
 
-class Enemy {
+class Enemy extends Entity {
 
     // initialization
     constructor(x, y) {
+        super(x,y);
         this.sprite = 'images/enemy-bug.png';
-        this.x = x;
-        this.y = y;
 
         // some random speed
         this.speed = random(5, 15);
@@ -34,23 +46,17 @@ class Enemy {
             allEnemies.splice(allEnemies.indexOf(this), 1);
         }
     };
-
-    // drawing the bug onto the canvas
-    render() {
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-    };
 };
 
 
 // Player class 
 
-class Player {
+class Player extends Entity {
 
     // initialization
     constructor(x, y) {
-        this.sprite = 'images/char-boy.png';
-        this.x = x;
-        this.y = y;
+        super(x,y);
+        this.sprite = 'images/char-boy.png'; 
     }
 
     // handling arrow inputs
@@ -68,17 +74,12 @@ class Player {
 
     // checking for collisions in update func...nothing more
     update() {
-        allEnemies.forEach(function (enemy) {
-            if ((player.x + 20) < enemy.x + 101 && (player.x + 20) + 60 > enemy.x && (player.y + 120) < (enemy.y + 60) + 100 && (player.y + 120) + 10 > (enemy.y + 60)) {
+        for (const enemy of allEnemies) {
+            if ((this.x + 20) < enemy.x + 101 && (this.x + 20) + 60 > enemy.x && (this.y + 120) < (enemy.y + 60) + 100 && (this.y + 120) + 10 > (this.y + 60)) {
                 lost = true;
                 setTimeout(() => { reset("lost") }, 5);
             }
-        })
-    }
-
-    // drawing onto the canvas
-    render() {
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+        }
     }
 }
 
@@ -104,12 +105,12 @@ start();
 // start function definition for assigning few game restart variables
 function start() {
     lost = false;
-    [player.x,player.y] = [2 * 101, 5 * 75];
+    [player.x, player.y] = [2 * 101, 5 * 75];
     modal.style.display = 'none';
     document.querySelectorAll(".status").forEach(function (elem) {
         elem.style.display = "none";
     })
-    
+
     // added 3 enemies at the start so player won't have time to quickly move across the pavement during the first 500 ms
     for (let i = 0; i < 3; i++) {
         allEnemies.push(new Enemy(-101, magicalPositions[random(3)] * 60));
